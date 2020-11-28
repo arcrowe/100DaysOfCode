@@ -3,13 +3,11 @@ from tkinter import messagebox
 from PIL import ImageTk, Image
 import tkinter.ttk as ttk
 import random
-import time
 
 BACKGROUND = '#EB8F8F'
 FOREGROUND = '#F1F3DE'
 FONT_NAME = "Courier"
 RED = '#CD0A0A'
-player2 = ''
 
 player1_turn = True
 
@@ -28,44 +26,51 @@ class MyButton:
                 self.buttons[3 * i + j].grid(row=i, column=6 + j)
 
     def check_board_for_winner(self):
+        message='win'
         # first row
         if (self.buttons[0]['text'] == self.buttons[1]['text'] and self.buttons[1]['text'] ==
                 self.buttons[2]['text'] and self.buttons[0]['text'] in ['❌', '⭕']):
-            return True
+            return message
 
         # second row
         if (self.buttons[3]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
                 self.buttons[5]['text'] and self.buttons[3]['text'] in ['❌', '⭕']):
-            return True
+            return message
 
         # third row
         if (self.buttons[6]['text'] == self.buttons[7]['text'] and self.buttons[7]['text'] ==
                 self.buttons[8]['text'] and self.buttons[6]['text'] in ['❌', '⭕']):
-            return True
+            return message
 
         # first col
         if (self.buttons[0]['text'] == self.buttons[3]['text'] and self.buttons[3]['text'] ==
                 self.buttons[6]['text'] and self.buttons[0]['text'] in ['❌', '⭕']):
-            return True
+            return message
 
         # second col
         if (self.buttons[1]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
                 self.buttons[7]['text'] and self.buttons[1]['text'] in ['❌', '⭕']):
-            return True
+            return message
 
         # third col
         if (self.buttons[2]['text'] == self.buttons[5]['text'] and self.buttons[5]['text'] ==
                 self.buttons[8]['text'] and self.buttons[2]['text'] in ['❌', '⭕']):
-            return True
+            return message
         # diagonal
         if (self.buttons[0]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
                 self.buttons[8]['text'] and self.buttons[0]['text'] in ['❌', '⭕']):
-            return True
+            return message
         # diagonal
         if (self.buttons[2]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
                 self.buttons[6]['text'] and self.buttons[2]['text'] in ['❌', '⭕']):
-            return True
-        return False
+            return message
+        if (self.buttons[0]['text'] in ['❌', '⭕'] and self.buttons[1]['text']in ['❌', '⭕'] and
+                self.buttons[2]['text'] in ['❌', '⭕'] and self.buttons[3]['text']in ['❌', '⭕'] and
+                self.buttons[4]['text'] in ['❌', '⭕'] and self.buttons[5]['text']in ['❌', '⭕'] and
+                self.buttons[6]['text'] in ['❌', '⭕'] and self.buttons[7]['text']in ['❌', '⭕'] and
+                self.buttons[8]['text'] in ['❌', '⭕']):
+            return 'tie'
+        return 'no decision'
 
     def reset_board(self):
         for button in self.buttons:
@@ -119,7 +124,7 @@ class Welcome(ttk.Frame):
         # label_player1.config(padx=10)
 
         self.cvs = Canvas(self, width=500, height=340)
-        welcome_path = "welcome.webp"
+        welcome_path = "../TicTacToePlay/welcome.webp"
         self.welcome_img = ImageTk.PhotoImage(Image.open(welcome_path))
         self.cvs.create_image(250, 170, image=self.welcome_img)
         self.cvs.grid(row=4, column=0)
@@ -159,12 +164,8 @@ class TwoPlayer(ttk.Frame, MyButton):
             button.configure(bg='red')
             button['text'] = '⭕'
         button['state'] = DISABLED
-        if not self.is_there_a_winner():
-            self.player1_turn = not self.player1_turn
+        if self.check_board_for_winner() == 'win':
 
-    def is_there_a_winner(self):
-
-        if self.check_board_for_winner():
             message = 'Player 1 You Win' if self.player1_turn else 'Player 2 You Win'
 
             messagebox.askokcancel(title='We have a winner',
@@ -174,8 +175,18 @@ class TwoPlayer(ttk.Frame, MyButton):
 
             self.player1_turn = True
             self.controller.show_frame(Welcome)
-            return True
-        return False
+        elif self.check_board_for_winner() == 'tie':
+            message = "It is a tie"
+
+            messagebox.askokcancel(title='Tic Tac Toe',
+                               message=message)
+            # reset board for next time
+            self.reset_board()
+
+            self.player1_turn = True
+            self.controller.show_frame(Welcome)
+        else:
+            self.player1_turn = not self.player1_turn
 
 
 class Computer(ttk.Frame, MyButton):
@@ -185,13 +196,14 @@ class Computer(ttk.Frame, MyButton):
         self.player1_turn = True
         MyButton.__init__(self)
 
+    # this is only called by player - computer can't click
     def change_button(self, button):
-        if self.player1_turn:
-            button.configure(bg='blue')
-            button['text'] = '❌'
-            if self.is_there_a_winner():
-                messagebox.askokcancel(title='We have a winner',
-                                       message=' You won')
+
+        button.configure(bg='blue')
+        button['text'] = '❌'
+        if self.check_board_for_winner():
+            messagebox.askokcancel(title='We have a winner',
+                                   message=' You won')
         else:
             button.configure(bg='red')
             button['text'] = '⭕'
