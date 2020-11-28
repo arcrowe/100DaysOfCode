@@ -14,14 +14,64 @@ player2 = ''
 player1_turn = True
 
 
-# def changepage(num):
-#     global app
-#     for widget in app.winfo_children():
-#         widget.destroy()
-#     if num == 1:
-#         Welcome(app)
-#     else:
-#         TwoPlayer(app)
+class MyButton:
+    def __init__(self):
+        self.buttons = [Button(self, text="", bg=BACKGROUND, command=lambda c=i: self.change_button(self.buttons[c]),
+                               font=(FONT_NAME, 40, 'bold'), highlightthickness=0,
+                               height=1, width=2) for i in range(9)]
+        self.make_widget()
+
+    def make_widget(self):
+
+        for i in range(3):
+            for j in range(3):
+                self.buttons[3 * i + j].grid(row=i, column=6 + j)
+
+    def check_board_for_winner(self):
+        # first row
+        if (self.buttons[0]['text'] == self.buttons[1]['text'] and self.buttons[1]['text'] ==
+                self.buttons[2]['text'] and self.buttons[0]['text'] in ['❌', '⭕']):
+            return True
+
+        # second row
+        if (self.buttons[3]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
+                self.buttons[5]['text'] and self.buttons[3]['text'] in ['❌', '⭕']):
+            return True
+
+        # third row
+        if (self.buttons[6]['text'] == self.buttons[7]['text'] and self.buttons[7]['text'] ==
+                self.buttons[8]['text'] and self.buttons[6]['text'] in ['❌', '⭕']):
+            return True
+
+        # first col
+        if (self.buttons[0]['text'] == self.buttons[3]['text'] and self.buttons[3]['text'] ==
+                self.buttons[6]['text'] and self.buttons[0]['text'] in ['❌', '⭕']):
+            return True
+
+        # second col
+        if (self.buttons[1]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
+                self.buttons[7]['text'] and self.buttons[1]['text'] in ['❌', '⭕']):
+            return True
+
+        # third col
+        if (self.buttons[2]['text'] == self.buttons[5]['text'] and self.buttons[5]['text'] ==
+                self.buttons[8]['text'] and self.buttons[2]['text'] in ['❌', '⭕']):
+            return True
+        # diagonal
+        if (self.buttons[0]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
+                self.buttons[8]['text'] and self.buttons[0]['text'] in ['❌', '⭕']):
+            return True
+        # diagonal
+        if (self.buttons[2]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
+                self.buttons[6]['text'] and self.buttons[2]['text'] in ['❌', '⭕']):
+            return True
+        return False
+
+    def reset_board(self):
+        for button in self.buttons:
+            button['text'] = ''
+            button['state'] = NORMAL
+            button.configure(bg=BACKGROUND)
 
 
 class MyApp(Tk):
@@ -94,21 +144,12 @@ class Welcome(ttk.Frame):
             self.controller.show_frame(Computer)
 
 
-class TwoPlayer(ttk.Frame):
+class TwoPlayer(ttk.Frame, MyButton):
     def __init__(self, parent, controller):
         self.controller = controller
         ttk.Frame.__init__(self, parent)
         self.player1_turn = True
-        self.buttons = [Button(self, text="", bg=BACKGROUND, command=lambda c=i: self.change_button(self.buttons[c]),
-                               font=(FONT_NAME, 40, 'bold'), highlightthickness=0,
-                               height=1, width=2) for i in range(9)]
-        self.make_widget()
-
-    def make_widget(self):
-
-        for i in range(3):
-            for j in range(3):
-                self.buttons[3 * i + j].grid(row=i, column=6 + j)
+        MyButton.__init__(self)
 
     def change_button(self, button):
         if self.player1_turn:
@@ -129,72 +170,20 @@ class TwoPlayer(ttk.Frame):
             messagebox.askokcancel(title='We have a winner',
                                    message=message)
             # reset board for next time
-            for button in self.buttons:
-                button['text'] = ''
-                button['state'] = NORMAL
-                button.configure(bg=BACKGROUND)
+            self.reset_board()
 
             self.player1_turn = True
             self.controller.show_frame(Welcome)
             return True
         return False
 
-    def check_board_for_winner(self):
-        # first row
-        if (self.buttons[0]['text'] == self.buttons[1]['text'] and self.buttons[1]['text'] ==
-                self.buttons[2]['text'] and self.buttons[0]['text'] in ['❌', '⭕']):
-            return True
 
-        # second row
-        if (self.buttons[3]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
-                self.buttons[5]['text'] and self.buttons[3]['text'] in ['❌', '⭕']):
-            return True
-
-        # third row
-        if (self.buttons[6]['text'] == self.buttons[7]['text'] and self.buttons[7]['text'] ==
-                self.buttons[8]['text'] and self.buttons[6]['text'] in ['❌', '⭕']):
-            return True
-
-        # first col
-        if (self.buttons[0]['text'] == self.buttons[3]['text'] and self.buttons[3]['text'] ==
-                self.buttons[6]['text'] and self.buttons[0]['text'] in ['❌', '⭕']):
-            return True
-
-        # second col
-        if (self.buttons[1]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
-                self.buttons[7]['text'] and self.buttons[1]['text'] in ['❌', '⭕']):
-            return True
-
-        # third col
-        if (self.buttons[2]['text'] == self.buttons[5]['text'] and self.buttons[5]['text'] ==
-                self.buttons[8]['text'] and self.buttons[2]['text'] in ['❌', '⭕']):
-            return True
-        # diagonal
-        if (self.buttons[0]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
-                self.buttons[8]['text'] and self.buttons[0]['text'] in ['❌', '⭕']):
-            return True
-        # diagonal
-        if (self.buttons[2]['text'] == self.buttons[4]['text'] and self.buttons[4]['text'] ==
-                self.buttons[6]['text'] and self.buttons[2]['text'] in ['❌', '⭕']):
-            return True
-        return False
-
-
-class Computer(ttk.Frame):
+class Computer(ttk.Frame, MyButton):
     def __init__(self, parent, controller):
         self.controller = controller
         ttk.Frame.__init__(self, parent)
         self.player1_turn = True
-        self.buttons = [Button(self, text="", bg=BACKGROUND, command=lambda c=i: self.change_button(self.buttons[c]),
-                               font=(FONT_NAME, 40, 'bold'), highlightthickness=0,
-                               height=1, width=2) for i in range(9)]
-        self.make_widget()
-
-    def make_widget(self):
-
-        for i in range(3):
-            for j in range(3):
-                self.buttons[3 * i + j].grid(row=i, column=6 + j)
+        MyButton.__init__(self)
 
     def change_button(self, button):
         if self.player1_turn:
@@ -215,10 +204,7 @@ class Computer(ttk.Frame):
         i = random.randint(0, 1)
         if i == 1:
             # reset board for next time
-            for button in self.buttons:
-                button['text'] = ''
-                button['state'] = NORMAL
-                button.configure(bg=BACKGROUND)
+            self.reset_board()
 
             self.player1_turn = True
         return i
