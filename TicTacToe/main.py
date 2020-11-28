@@ -188,7 +188,7 @@ class TwoPlayer(ttk.Frame, MyButton):
             self.player1_turn = not self.player1_turn
 
 
-def check_list(filled, empty):
+def check_list(filled_player, filled_computer, empty):
     spots = {
         'row1': [0, 1, 2],
         'row2': [3, 4, 5],
@@ -199,6 +199,7 @@ def check_list(filled, empty):
         'diag1': [0, 4, 8],
         'diag2': [2, 4, 6]
     }
+    # combinations that will lead to win
     threats = {
         'row1': [(0, 1), (1, 2), (0, 2)],
         'row2': [(3, 4), (4, 5), (3, 5)],
@@ -210,7 +211,11 @@ def check_list(filled, empty):
         'diag2': [(2, 4), (4, 6), (2, 6)]
     }
 
-    for j in list(filled):
+    # check if there is a win available
+    filled_perm = itertools.permutations(filled_computer, 2)
+    # loop over all possible filled pairs by computer
+    for j in list(filled_perm):
+        # see if any pairs match threats
         for k, v in threats.items():
             if j in v:
                 # if threat is determined and available
@@ -219,7 +224,20 @@ def check_list(filled, empty):
                 # if threat is determined but already solved - look for more
                 else:
                     continue
-    # if no threat - pick random spot
+    # if no win - block player
+    filled_perm = itertools.permutations(filled_player, 2)
+    # loop over all possible filled pairs by player
+    for j in list(filled_perm):
+        # see if any pairs match threats
+        for k, v in threats.items():
+            if j in v:
+                # if threat is determined and available
+                if set(spots[k]) & set(empty):
+                    return list(set(spots[k]) & set(empty))[0]
+                # if threat is determined but already solved - look for more
+                else:
+                    continue
+    # otherwise - random choice
     return random.choice(empty)
 
 
@@ -237,6 +255,7 @@ class Computer(ttk.Frame, MyButton):
             button['state'] = DISABLED
             if self.is_winner('You'):
                 self.reset_board()
+                self.player1_turn = True
                 self.controller.show_frame(Welcome)
             # computer picks next square
             else:
@@ -250,6 +269,7 @@ class Computer(ttk.Frame, MyButton):
             button['state'] = DISABLED
             if self.is_winner('Computer'):
                 self.reset_board()
+                self.player1_turn = True
                 self.controller.show_frame(Welcome)
             else:
                 self.player1_turn = not self.player1_turn
@@ -266,12 +286,13 @@ class Computer(ttk.Frame, MyButton):
             return True
         return False
 
+    # figure out computer's next move
     def computer_move(self):
         empty_squares = [i for i in range(len(self.buttons)) if self.buttons[i]['text'] == '']
-        filled_squares = [i for i in range(len(self.buttons)) if self.buttons[i]['text'] == '❌']
+        player_squares = [i for i in range(len(self.buttons)) if self.buttons[i]['text'] == '❌']
+        computer_squares = [i for i in range(len(self.buttons)) if self.buttons[i]['text'] == '⭕']
 
-        filled_perm = itertools.permutations(filled_squares, 2)
-        spot = check_list(filled_perm, empty_squares)
+        spot = check_list(player_squares, computer_squares, empty_squares)
         return spot
 
 
