@@ -110,7 +110,7 @@ class Welcome(ttk.Frame):
 
     def make_widget(self):
         self.cvs = Canvas(self, width=500, height=340)
-        welcome_path = "../TicTacToePlay/welcome.webp"
+        welcome_path = "../TicTacToe/welcome.webp"
         self.welcome_img = ImageTk.PhotoImage(Image.open(welcome_path))
         self.cvs.create_image(250, 170, image=self.welcome_img)
         self.cvs.grid(row=4, columnspan=2)
